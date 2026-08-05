@@ -5,6 +5,7 @@
 
 #include "AbilitySystemComponent.h"
 #include "AbilitySystem/CAbilitySystemComponent.h"
+#include "AbilitySystem/C_AttributeSet.h"
 
 
 // Sets default values
@@ -16,6 +17,7 @@ ACEnemyCharacter::ACEnemyCharacter()
 	AbilitySystemComponent->SetIsReplicated(true);
 	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Minimal);
 
+	AttributeSet = CreateDefaultSubobject<UC_AttributeSet>("AttributeSet");
 }
 
 UAbilitySystemComponent* ACEnemyCharacter::GetAbilitySystemComponent() const

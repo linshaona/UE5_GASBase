@@ -5,6 +5,7 @@
 
 #include "AbilitySystemComponent.h"
 #include "AbilitySystem/CAbilitySystemComponent.h"
+#include "AbilitySystem/C_AttributeSet.h"
 
 ACPlayerState::ACPlayerState()
 {
@@ -15,6 +16,9 @@ ACPlayerState::ACPlayerState()
 	
 	//客户端的表现形式设置
 	AbilitySystemComponent -> SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
+
+
+	AttributeSet = CreateDefaultSubobject<UC_AttributeSet>("AttributeSet");
 }
 
 UAbilitySystemComponent* ACPlayerState::GetAbilitySystemComponent() const

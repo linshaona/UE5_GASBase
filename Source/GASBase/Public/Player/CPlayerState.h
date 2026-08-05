@@ -9,6 +9,7 @@
 
 
 class UAbilitySystemComponent;
+class UAttributeSet
 /**
  * 
  */
@@ -24,4 +25,7 @@ public:
 private:
 	UPROPERTY(VisibleAnywhere,Category="GASBase|Abilities")
 	TObjectPtr<UAbilitySystemComponent>	 AbilitySystemComponent;
+	
+	UPROPERTY()
+	TObjectPtr<UAttributeSet> AttributeSet;
 };

@@ -6,6 +6,8 @@
 #include "BaseCharacter.h"
 #include "CEnemyCharacter.generated.h"
 
+class UAttributeSet;
+
 UCLASS()
 class GASBASE_API ACEnemyCharacter : public ABaseCharacter
 {
@@ -23,4 +25,7 @@ protected:
 private:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
+	
+	UPROPERTY()
+	TObjectPtr<UAttributeSet> AttributeSet;
 };
