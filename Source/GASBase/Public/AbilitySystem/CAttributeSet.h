@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "AbilitySystemComponent.h"
 #include "AttributeSet.h"
-#include "C_AttributeSet.generated.h"
+#include "CAttributeSet.generated.h"
 
 
 //属性初始化的宏
@@ -15,15 +15,25 @@
 	GAMEPLAYATTRIBUTE_VALUE_SETTER(PropertyName) \
 	GAMEPLAYATTRIBUTE_VALUE_INITTER(PropertyName) 
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FAttributesInitialized);
 
 UCLASS()
-class GASBASE_API UC_AttributeSet : public UAttributeSet
+class GASBASE_API UCAttributeSet : public UAttributeSet
 {
 	GENERATED_BODY()
 	
 public:
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void PostGameplayEffectExecute(const struct FGameplayEffectModCallbackData& Data) override;
 	
+	UPROPERTY(BlueprintAssignable)
+	FAttributesInitialized OnAttributeSetInitialized;
+	
+	UPROPERTY(ReplicatedUsing = OnRep_AttributesInitialized)
+	bool bAttributesInitialized = false;
+	
+	UFUNCTION()
+	void OnRep_AttributesInitialized();
 	
 	//在GAS中创建一个属性的模板
 	UPROPERTY(BlueprintReadOnly,ReplicatedUsing = OnRep_Health/*网络同步的回调函数*/)
@@ -36,15 +46,16 @@ public:
 	
 	//-----
 	
-	UPROPERTY(BlueprintReadOnly,ReplicatedUsing = OnRep_MaxMano)
-	FGameplayAttributeData MaxMano;
-	
-	
 	UPROPERTY(BlueprintReadOnly,ReplicatedUsing = OnRep_MaxHealth)
 	FGameplayAttributeData MaxHealth;
 	
 	UPROPERTY(BlueprintReadOnly,ReplicatedUsing = OnRep_Mano)
 	FGameplayAttributeData Mano;
+	
+	UPROPERTY(BlueprintReadOnly,ReplicatedUsing = OnRep_MaxMano)
+	FGameplayAttributeData MaxMano;
+	
+	
 	
 	
 	UFUNCTION()

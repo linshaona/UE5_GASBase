@@ -1,9 +1,10 @@
 ﻿// Make by linshao
 
 
-#include "GASBase/Public/Characters/PlayerCharacter.h"
+#include "GASBase/Public/Characters/CPlayerCharacter.h"
 
 #include "AbilitySystemComponent.h"
+#include "AbilitySystem/CAttributeSet.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -11,8 +12,9 @@
 #include "Player/CPlayerState.h"
 
 
+class UCAttributeSet;
 // Sets default values
-APlayerCharacter::APlayerCharacter()
+ACPlayerCharacter::ACPlayerCharacter()
 {
 	PrimaryActorTick.bCanEverTick = false;
 	
@@ -46,7 +48,15 @@ APlayerCharacter::APlayerCharacter()
 	
 }
 
-UAbilitySystemComponent* APlayerCharacter::GetAbilitySystemComponent() const
+UAttributeSet* ACPlayerCharacter::GetAttributeSet() const
+{
+	ACPlayerState* CPlayerState = Cast<ACPlayerState>(GetPlayerState());
+	if (!IsValid(CPlayerState)) return nullptr;
+	
+	return CPlayerState->GetAttributeSet();
+}
+
+UAbilitySystemComponent* ACPlayerCharacter::GetAbilitySystemComponent() const
 {
 	ACPlayerState* CPlayerState = Cast<ACPlayerState>(GetPlayerState());
 	if (!IsValid(CPlayerState)) return nullptr;
@@ -54,23 +64,36 @@ UAbilitySystemComponent* APlayerCharacter::GetAbilitySystemComponent() const
 	return CPlayerState->GetAbilitySystemComponent();
 }
 
-void APlayerCharacter::PossessedBy(AController* NewController)
+void ACPlayerCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
 	
 	if (!IsValid(GetAbilitySystemComponent())|| !HasAuthority()) return;
 	
 	GetAbilitySystemComponent()->InitAbilityActorInfo(GetPlayerState(),this);
+	OnASCInitialized.Broadcast(GetAbilitySystemComponent(),GetAttributeSet());
 	GiveStartupAbilities();
+	InitializeAttributes();
+	
+	UCAttributeSet* CAttributeSet = Cast<UCAttributeSet>(GetAttributeSet());
+	if (!IsValid(CAttributeSet)) return;
+	
+	GetAbilitySystemComponent()->GetGameplayAttributeValueChangeDelegate(CAttributeSet->GetHealthAttribute()).AddUObject(this,&ThisClass::OnHealthChanged);
 }
 
-void APlayerCharacter::OnRep_PlayerState()
+void ACPlayerCharacter::OnRep_PlayerState()
 {
 	Super::OnRep_PlayerState();
 	
 	if (!IsValid(GetAbilitySystemComponent())) return;
 	
 	GetAbilitySystemComponent()->InitAbilityActorInfo(GetPlayerState(),this);
+	OnASCInitialized.Broadcast(GetAbilitySystemComponent(),GetAttributeSet());
+	
+	UCAttributeSet* CAttributeSet = Cast<UCAttributeSet>(GetAttributeSet());
+	if (!IsValid(CAttributeSet)) return;
+	
+	GetAbilitySystemComponent()->GetGameplayAttributeValueChangeDelegate(CAttributeSet->GetHealthAttribute()).AddUObject(this,&ThisClass::OnHealthChanged);
 }
 
 

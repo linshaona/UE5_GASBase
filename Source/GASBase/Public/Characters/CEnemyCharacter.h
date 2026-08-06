@@ -3,13 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BaseCharacter.h"
+#include "CBaseCharacter.h"
 #include "CEnemyCharacter.generated.h"
 
 class UAttributeSet;
 
 UCLASS()
-class GASBASE_API ACEnemyCharacter : public ABaseCharacter
+class GASBASE_API ACEnemyCharacter : public ACBaseCharacter
 {
 	GENERATED_BODY()
 
@@ -17,7 +17,7 @@ public:
 
 	ACEnemyCharacter();
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
-
+	virtual UAttributeSet* GetAttributeSet() const override;
 protected:
 	
 	virtual void BeginPlay() override;

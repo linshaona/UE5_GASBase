@@ -3,21 +3,21 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BaseCharacter.h"
-#include "PlayerCharacter.generated.h"
+#include "CBaseCharacter.h"
+#include "CPlayerCharacter.generated.h"
 
 class UCameraComponent;
 class USpringArmComponent;
 
 UCLASS()
-class GASBASE_API APlayerCharacter : public ABaseCharacter//,public IAbilitySystemInterface
+class GASBASE_API ACPlayerCharacter : public ACBaseCharacter//,public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this character's properties
-	APlayerCharacter();
-	
+	ACPlayerCharacter();
+	virtual UAttributeSet* GetAttributeSet() const override;
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	virtual void PossessedBy(AController* NewController) override;
 	virtual void OnRep_PlayerState() override;

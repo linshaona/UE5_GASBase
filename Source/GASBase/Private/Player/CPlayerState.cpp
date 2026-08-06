@@ -5,7 +5,7 @@
 
 #include "AbilitySystemComponent.h"
 #include "AbilitySystem/CAbilitySystemComponent.h"
-#include "AbilitySystem/C_AttributeSet.h"
+#include "AbilitySystem/CAttributeSet.h"
 
 ACPlayerState::ACPlayerState()
 {
@@ -18,7 +18,7 @@ ACPlayerState::ACPlayerState()
 	AbilitySystemComponent -> SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
 
 
-	AttributeSet = CreateDefaultSubobject<UC_AttributeSet>("AttributeSet");
+	AttributeSet = CreateDefaultSubobject<UCAttributeSet>("AttributeSet");
 }
 
 UAbilitySystemComponent* ACPlayerState::GetAbilitySystemComponent() const

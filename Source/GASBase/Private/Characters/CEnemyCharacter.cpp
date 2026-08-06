@@ -5,7 +5,7 @@
 
 #include "AbilitySystemComponent.h"
 #include "AbilitySystem/CAbilitySystemComponent.h"
-#include "AbilitySystem/C_AttributeSet.h"
+#include "AbilitySystem/CAttributeSet.h"
 
 
 // Sets default values
@@ -17,7 +17,7 @@ ACEnemyCharacter::ACEnemyCharacter()
 	AbilitySystemComponent->SetIsReplicated(true);
 	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Minimal);
 
-	AttributeSet = CreateDefaultSubobject<UC_AttributeSet>("AttributeSet");
+	AttributeSet = CreateDefaultSubobject<UCAttributeSet>("AttributeSet");
 }
 
 UAbilitySystemComponent* ACEnemyCharacter::GetAbilitySystemComponent() const
@@ -27,6 +27,11 @@ UAbilitySystemComponent* ACEnemyCharacter::GetAbilitySystemComponent() const
 	return AbilitySystemComponent;
 }
 
+UAttributeSet* ACEnemyCharacter::GetAttributeSet() const
+{
+	return AttributeSet;
+}
+
 void ACEnemyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -34,11 +39,17 @@ void ACEnemyCharacter::BeginPlay()
 	if (!IsValid(AbilitySystemComponent))return ;
 	
 	GetAbilitySystemComponent()->InitAbilityActorInfo(this,this);
+	OnASCInitialized.Broadcast(GetAbilitySystemComponent(),GetAttributeSet());
 	
 	if (!HasAuthority()) return;
 	
 	GiveStartupAbilities();
+	InitializeAttributes();  
 	
+	UCAttributeSet* CAttributeSet = Cast<UCAttributeSet>(GetAttributeSet());
+	if (!IsValid(CAttributeSet)) return;
+	
+	GetAbilitySystemComponent()->GetGameplayAttributeValueChangeDelegate(CAttributeSet->GetHealthAttribute()).AddUObject(this,&ThisClass::OnHealthChanged);
 }
 
 

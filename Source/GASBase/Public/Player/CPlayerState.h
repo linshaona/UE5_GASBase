@@ -9,7 +9,7 @@
 
 
 class UAbilitySystemComponent;
-class UAttributeSet
+class UAttributeSet;
 /**
  * 
  */
@@ -22,6 +22,7 @@ public:
 	ACPlayerState();
 	
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const;
+	virtual UAttributeSet* GetAttributeSet() const {return AttributeSet;};
 private:
 	UPROPERTY(VisibleAnywhere,Category="GASBase|Abilities")
 	TObjectPtr<UAbilitySystemComponent>	 AbilitySystemComponent;
