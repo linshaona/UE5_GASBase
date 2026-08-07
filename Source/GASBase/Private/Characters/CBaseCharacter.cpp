@@ -54,6 +54,15 @@ void ACBaseCharacter::InitializeAttributes() const
 	GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
 }
 
+void ACBaseCharacter::ResetAttributes()
+{
+	checkf(IsValid(ResetAttributesEffect),TEXT("ResetAttributesEffect is not valid!"));
+	
+	FGameplayEffectContextHandle ContextHandle = GetAbilitySystemComponent()->MakeEffectContext();
+	FGameplayEffectSpecHandle SpecHandle = GetAbilitySystemComponent()->MakeOutgoingSpec(ResetAttributesEffect,1.0f,ContextHandle);
+	GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
+}
+
 void ACBaseCharacter::OnHealthChanged(const FOnAttributeChangeData& AttributeChangeData)
 {
 	if (AttributeChangeData.NewValue <= 0.0f)

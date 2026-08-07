@@ -3,6 +3,8 @@
 
 #include "AbilitySystem/CAttributeSet.h"
 
+#include "GameplayEffectExtension.h"
+#include "GameplayTags/CTags.h"
 #include "Net/UnrealNetwork.h"
 
 void UCAttributeSet::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
@@ -17,9 +19,21 @@ void UCAttributeSet::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>&
 	DOREPLIFETIME(ThisClass,bAttributesInitialized);
 }
 
-void UCAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffectModCallbackData& Data)
+void UCAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data)
 {
 	Super::PostGameplayEffectExecute(Data);
+	
+	if (Data.EvaluatedData.Attribute == GetHealthAttribute() && GetHealth() <= 0.0f)
+	{
+		FGameplayEventData Payload;
+		Payload.Instigator = Data.Target.GetAvatarActor();
+		UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(
+			Data.EffectSpec.GetEffectContext().GetInstigator(),
+			CTags::Events::KillScored,
+			Payload
+			);
+	}
+	
 	
 	if (!bAttributesInitialized)
 	{
