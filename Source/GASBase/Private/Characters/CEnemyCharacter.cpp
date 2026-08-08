@@ -6,6 +6,7 @@
 #include "AbilitySystemComponent.h"
 #include "AbilitySystem/CAbilitySystemComponent.h"
 #include "AbilitySystem/CAttributeSet.h"
+#include "Runtime/AIModule/Classes/AIController.h"
 
 
 // Sets default values
@@ -50,6 +51,16 @@ void ACEnemyCharacter::BeginPlay()
 	if (!IsValid(CAttributeSet)) return;
 	
 	GetAbilitySystemComponent()->GetGameplayAttributeValueChangeDelegate(CAttributeSet->GetHealthAttribute()).AddUObject(this,&ThisClass::OnHealthChanged);
+}
+
+void ACEnemyCharacter::HandleDeath()
+{
+	Super::HandleDeath();
+	
+	AAIController* AIController = Cast<AAIController>(GetOwner());
+	if (!IsValid(AIController)) return;
+	
+	AIController->StopMovement();
 }
 
 

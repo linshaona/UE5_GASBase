@@ -8,11 +8,16 @@
 #include "GameFramework/Character.h"
 #include "CBaseCharacter.generated.h"
 
+namespace GASBaseTags
+{
+	extern GASBASE_API const FName Player;
+}
+
 class UGameplayAbility;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FASCInitialized,UAbilitySystemComponent*,ASC,UAttributeSet*,AS);
 
-UCLASS()
+UCLASS(Abstract)
 class GASBASE_API ACBaseCharacter : public ACharacter,public IAbilitySystemInterface
 {
 	GENERATED_BODY()
@@ -23,8 +28,8 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	virtual UAttributeSet* GetAttributeSet() const {return nullptr;};
-	void SetAlive(bool Value){bAlive = Value;};
-	bool GetAlive(){return bAlive;};
+	void SetAlive(const bool&Value){bAlive = Value;};
+	bool GetAlive() const {return bAlive;};
 	
 	
 	UPROPERTY(BlueprintAssignable)
@@ -37,6 +42,7 @@ public:
 	void ResetAttributes(); 
 	
 protected:
+	
 	void GiveStartupAbilities();
 	void InitializeAttributes() const; 
 	

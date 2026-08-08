@@ -8,6 +8,11 @@
 #include "DataWrappers/ChaosVDParticleDataWrapper.h"
 #include "Net/UnrealNetwork.h"
 
+namespace GASBaseTags
+{
+	const FName Player = FName(TEXT("Player"));
+}
+
 
 // Sets default values
 ACBaseCharacter::ACBaseCharacter()

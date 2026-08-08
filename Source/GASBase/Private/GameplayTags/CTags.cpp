@@ -3,6 +3,11 @@
 
 namespace CTags
 {
+	
+	namespace SetByCaller
+	{
+		UE_DEFINE_GAMEPLAY_TAG_COMMENT(Projectile,"CTags.SetByCaller.Projectile","Tag for the Projectile");
+	}
 	namespace CAbilities
 	{
 		UE_DEFINE_GAMEPLAY_TAG_COMMENT(ActivateOnGiven,"CTags.CAbilities.ActivateOnGiven","Activate on Given Ability");
