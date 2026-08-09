@@ -7,6 +7,7 @@
 #include "AbilitySystemComponent.h"
 #include "NiagaraComponent.h"
 #include "GameplayTags/CTags.h"
+#include "Utils/CBlueprintLibrary.h"
 
 ACProjectile::ACProjectile()
 {
@@ -37,12 +38,19 @@ void ACProjectile::NotifyActorBeginOverlap(AActor* OtherActor)
 	UAbilitySystemComponent* AbilitySystemComponent = PlayerCharacter->GetAbilitySystemComponent();
 	if (!IsValid(AbilitySystemComponent)||!HasAuthority()) return;
 	
-	FGameplayEffectContextHandle ContextHandle  = AbilitySystemComponent->MakeEffectContext();
-	FGameplayEffectSpecHandle SpecHandle = AbilitySystemComponent->MakeOutgoingSpec(DamageEffect,1.0f,ContextHandle);
+	FGameplayEventData Payload;
+	Payload.Instigator = GetOwner();
+	Payload.Target = PlayerCharacter;
 	
-	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(SpecHandle,CTags::SetByCaller::Projectile,Damage);
+	UCBlueprintLibrary::SendDamageEventToPlayer(PlayerCharacter, DamageEffect, Payload, CTags::SetByCaller::Projectile, Damage);
 	
-	AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
+	
+	// FGameplayEffectContextHandle ContextHandle  = AbilitySystemComponent->MakeEffectContext();
+	// FGameplayEffectSpecHandle SpecHandle = AbilitySystemComponent->MakeOutgoingSpec(DamageEffect,1.0f,ContextHandle);
+	//
+	// UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(SpecHandle,CTags::SetByCaller::Projectile,Damage);
+	//
+	// AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
 	
 	SpawnImpactEffect();
 	Destroy();

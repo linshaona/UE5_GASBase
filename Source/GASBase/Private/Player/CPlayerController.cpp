@@ -7,6 +7,7 @@
 #include "AbilitySystemComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
+#include "Characters/CBaseCharacter.h"
 #include "GameFramework/Character.h"
 #include "GameplayTags/CTags.h"
 
@@ -41,27 +42,32 @@ void ACPlayerController::SetupInputComponent()
 
 void ACPlayerController::Jump()
 {
+	//if (!IsAlive())return;
 	if (!IsValid(GetCharacter()))
 		return;
 		
+	if (!IsAlive())return;
 		GetCharacter()->Jump();
 	
 }     
 
 void ACPlayerController::StopJumping()
 {
+	//if (!IsAlive())return;
 	if (!IsValid(GetCharacter()))
-		return
-	
+		return;
+	if (!IsAlive())return;
 	GetCharacter()->StopJumping();
 	
 }
 
 void ACPlayerController::Move(const FInputActionValue& Value)
 {
+	//if (!IsAlive())return;
 	if (!IsValid(GetPawn()))
 		return;
 	
+	if (!IsAlive())return;
 	const FVector2D MovementVector = Value.Get<FVector2D>();
 	
 	//找到正前方
@@ -75,7 +81,8 @@ void ACPlayerController::Move(const FInputActionValue& Value)
 
 void ACPlayerController::Look(const FInputActionValue& Value)
 {
-	
+
+	if (!IsAlive())return;
 	const FVector2D LookAxisVector = Value.Get<FVector2D>();
 	
 	AddYawInput(LookAxisVector.X);
@@ -84,27 +91,41 @@ void ACPlayerController::Look(const FInputActionValue& Value)
 
 void ACPlayerController::Primary()
 {
+	//if (!IsAlive())return;
 	ActivateAbility(CTags::CAbilities::Primary);
 }
 
 void ACPlayerController::Secondary()
 {
+	//if (!IsAlive())return;
 	ActivateAbility(CTags::CAbilities::Secondary);
 	UE_LOG(LogTemp,Display,TEXT("Secondary"));
 }
 
 void ACPlayerController::Tertiary()
 {
+	//if (!IsAlive())return;
 	ActivateAbility(CTags::CAbilities::Tertiary);
 	UE_LOG(LogTemp,Display,TEXT("Tertiary"));
 }
 
+
+
 void ACPlayerController::ActivateAbility(const FGameplayTag& AbilityTag) const
 {
+	if (!IsAlive())return;
 	UAbilitySystemComponent* ASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetPawn());
 	
 	if (!IsValid(ASC))return;
 	
 	ASC->TryActivateAbilitiesByTag(AbilityTag.GetSingleTagContainer());
 	
+}
+
+bool ACPlayerController::IsAlive() const
+{
+	ACBaseCharacter* BaseCharacter = Cast<ACBaseCharacter>(GetPawn());
+	
+	if (!IsValid(BaseCharacter)) return false;
+	return BaseCharacter->GetAlive();
 }

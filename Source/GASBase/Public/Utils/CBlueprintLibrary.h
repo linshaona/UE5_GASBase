@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayEffect.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "CBlueprintLibrary.generated.h"
 
@@ -42,4 +43,8 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	static FClosestActorWithTagResult FindClosestActorWithTag(const UObject* WorldContextObject,const FVector& Origin,const FName& TagName);
+	
+	UFUNCTION(BlueprintCallable)
+	
+	static void SendDamageEventToPlayer(AActor* Target,const TSubclassOf<UGameplayEffect>& DamageEffect,UPARAM(ref) FGameplayEventData& Payload,const FGameplayTag& DataTag,float Damage,UObject* OptionalParticleSystem = nullptr);
 };

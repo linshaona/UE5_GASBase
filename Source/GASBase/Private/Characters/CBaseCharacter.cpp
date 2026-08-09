@@ -62,6 +62,7 @@ void ACBaseCharacter::InitializeAttributes() const
 void ACBaseCharacter::ResetAttributes()
 {
 	checkf(IsValid(ResetAttributesEffect),TEXT("ResetAttributesEffect is not valid!"));
+	if (!IsValid(GetAbilitySystemComponent())) return;
 	
 	FGameplayEffectContextHandle ContextHandle = GetAbilitySystemComponent()->MakeEffectContext();
 	FGameplayEffectSpecHandle SpecHandle = GetAbilitySystemComponent()->MakeOutgoingSpec(ResetAttributesEffect,1.0f,ContextHandle);

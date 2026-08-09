@@ -53,4 +53,8 @@ public:
 	void Primary();
 	void Secondary();
 	void Tertiary();
+	
+	bool IsAlive() const;
+private:
+		
 };
