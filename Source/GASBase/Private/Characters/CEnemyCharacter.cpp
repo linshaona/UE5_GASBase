@@ -6,8 +6,17 @@
 #include "AbilitySystemComponent.h"
 #include "AbilitySystem/CAbilitySystemComponent.h"
 #include "AbilitySystem/CAttributeSet.h"
+#include "GameplayTags/CTags.h"
+#include "Net/UnrealNetwork.h"
 #include "Runtime/AIModule/Classes/AIController.h"
 
+
+void ACEnemyCharacter::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	
+	DOREPLIFETIME(ThisClass,bIsBeingLaunched);
+}
 
 // Sets default values
 ACEnemyCharacter::ACEnemyCharacter()
@@ -32,6 +41,29 @@ UAttributeSet* ACEnemyCharacter::GetAttributeSet() const
 {
 	return AttributeSet;
 }
+
+void ACEnemyCharacter::StopMovingUntilLanding()
+{
+	bIsBeingLaunched = true;
+	AAIController* AIController = Cast<AAIController>(GetOwner());
+	if (!IsValid(AIController)) return;
+	
+	AIController->StopMovement();
+	if (!LandedDelegate.IsAlreadyBound(this,&ThisClass::EnableMovementOnLanded))
+	{
+		LandedDelegate.AddDynamic(this,&ThisClass::EnableMovementOnLanded);
+	}
+}
+
+void ACEnemyCharacter::EnableMovementOnLanded(const FHitResult& Hit)
+{
+	bIsBeingLaunched = false;
+	//UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this,CTags::Events::Enemy::EndAttack);
+	//AAIController* AIController = Cast<AAIController>(GetOwner());
+	//AIController->StopMovement();
+	LandedDelegate.RemoveDynamic(this,&ThisClass::EnableMovementOnLanded);
+}
+
 
 void ACEnemyCharacter::BeginPlay()
 {
@@ -62,5 +94,6 @@ void ACEnemyCharacter::HandleDeath()
 	
 	AIController->StopMovement();
 }
+
 
 

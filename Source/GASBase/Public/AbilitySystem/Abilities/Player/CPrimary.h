@@ -16,23 +16,23 @@ class GASBASE_API UCPrimary : public UCGameplayAbility
 	
 public:
 	
-	UFUNCTION(BlueprintCallable,Category = "GASBase|Abilities")
-	TArray<AActor*>  HitBoxOverlapTest();
-	
+	// UFUNCTION(BlueprintCallable,Category = "GASBase|Abilities")
+	// TArray<AActor*>  HitBoxOverlapTest();
+	//
 	UFUNCTION(BlueprintCallable,Category = "GASBase|Abilities")
 	void SendHitReactEventToActor(const TArray<AActor*>& ActorsHit);
 	
-private:
+protected:
 	
-	UPROPERTY(EditDefaultsOnly,Category = "GASBase|Abilities")
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,Category = "GASBase|Abilities")
 	float HitBoxRadius = 100.0f;
 	
-	UPROPERTY(EditDefaultsOnly,Category = "GASBase|Abilities")
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,Category = "GASBase|Abilities")
 	float HitBoxForwardOffset = 200.0f;
 	
-	UPROPERTY(EditDefaultsOnly,Category = "GASBase|Abilities")
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,Category = "GASBase|Abilities")
 	float HitBoxElevationOffset = 20.0f;
 	
 	
-	void DrawHitBoxOverlapDebugs(const TArray<FOverlapResult>& OverlapResults,const FVector& HitBoxLocation) const;
+	//void DrawHitBoxOverlapDebugs(const TArray<FOverlapResult>& OverlapResults,const FVector& HitBoxLocation) const;
 };

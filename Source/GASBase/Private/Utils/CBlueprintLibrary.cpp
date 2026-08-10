@@ -5,6 +5,8 @@
 
 #include "AbilitySystem/CAttributeSet.h"
 #include "Characters/CBaseCharacter.h"
+#include "Characters/CEnemyCharacter.h"
+#include "Engine/OverlapResult.h"
 #include "GameplayTags/CTags.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -73,17 +75,29 @@ FClosestActorWithTagResult UCBlueprintLibrary::FindClosestActorWithTag(const UOb
 	return Result;
 }
 
-void UCBlueprintLibrary::SendDamageEventToPlayer(AActor* Target, const TSubclassOf<UGameplayEffect>& DamageEffect, FGameplayEventData& Payload, const FGameplayTag& DataTag, float Damage,UObject* OptionalParticleSystem)
+void UCBlueprintLibrary::SendDamageEventToPlayer(AActor* Target, const TSubclassOf<UGameplayEffect>& DamageEffect, FGameplayEventData& Payload, const FGameplayTag& DataTag, float Damage, FGameplayTag EventTagOverride ,UObject* OptionalParticleSystem)
 {
 	ACBaseCharacter* PlayerCharacter = Cast<ACBaseCharacter>(Target);
 	if (!IsValid(PlayerCharacter))return;
 	if (!PlayerCharacter->GetAlive())return;
 
-	UCAttributeSet* AttributeSet = Cast<UCAttributeSet>(PlayerCharacter->GetAttributeSet());
-	if (!IsValid(AttributeSet))return;
+	FGameplayTag EventTag;
+	if (!EventTagOverride.MatchesTagExact(FGameplayTag()))
+	{
+		EventTag=EventTagOverride;
+	}
+	else
+	{
+		
+		UCAttributeSet* AttributeSet = Cast<UCAttributeSet>(PlayerCharacter->GetAttributeSet());
+		if (!IsValid(AttributeSet))return;
 
-	const bool bLethal = AttributeSet->GetHealth() - Damage <= 0.0f;
-	const FGameplayTag EventTag = bLethal?CTags::Events::Player::Death:CTags::Events::Player::HitReact;
+		const bool bLethal = AttributeSet->GetHealth() - Damage <= 0.0f;
+		EventTag = bLethal?CTags::Events::Player::Death:CTags::Events::Player::HitReact;
+	}
+	
+	
+
 	
 	Payload.OptionalObject = OptionalParticleSystem;
 	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(PlayerCharacter,EventTag,Payload);
@@ -99,6 +113,135 @@ void UCBlueprintLibrary::SendDamageEventToPlayer(AActor* Target, const TSubclass
 
 	TargetASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
 }
+
+void UCBlueprintLibrary::SendDamageEventToPlayers(TArray<AActor*> Targets,
+	const TSubclassOf<UGameplayEffect>& DamageEffect, FGameplayEventData& Payload, const FGameplayTag& DataTag,
+	float Damage, FGameplayTag EventTagOverride, UObject* OptionalParticleSystem)
+{
+	for (AActor* TargetActor : Targets)
+	{
+		SendDamageEventToPlayer(TargetActor,DamageEffect,Payload,DataTag,Damage,EventTagOverride,OptionalParticleSystem);
+	}
+}
+
+TArray<AActor*> UCBlueprintLibrary::HitBoxOverlapTest(AActor* AvatarActor, float HitBoxRadius, float HitBoxElevationOffset, float HitBoxForwardOffset,const bool&bDrawDebug)
+{
+	TArray<AActor*> ActorsToIgnore;
+	if (!IsValid(AvatarActor))return ActorsToIgnore;
 	
+	ActorsToIgnore.Add(AvatarActor);
+	
+	//防止打到发起者
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActors(ActorsToIgnore);
+	
+	FCollisionResponseParams ResponseParams;
+	ResponseParams.CollisionResponse.SetAllChannels(ECR_Ignore);
+	ResponseParams.CollisionResponse.SetResponse(ECC_Pawn,ECR_Block);
+	
+	TArray<FOverlapResult> OverlapResults;
+	FCollisionShape Sphere = FCollisionShape::MakeSphere(HitBoxRadius);
+	
+	const FVector Forward = AvatarActor->GetActorForwardVector() * HitBoxForwardOffset;
+	const FVector HitBoxLocation = AvatarActor->GetActorLocation() + Forward + FVector(0.0f,0.0f,HitBoxElevationOffset);
+	
+	UWorld* World = GEngine->GetWorldFromContextObject(AvatarActor,EGetWorldErrorMode::LogAndReturnNull);
+	if (!IsValid(World))return ActorsToIgnore;
+	
+	World->OverlapMultiByChannel(OverlapResults, HitBoxLocation, FQuat::Identity,ECC_Visibility,Sphere,QueryParams,ResponseParams);
+	
+	TArray<AActor*> ActorsHit;
+	for (const FOverlapResult& Result : OverlapResults)
+	{
+		// if (!IsValid(Result.GetActor())) 
+		// 	continue;
+		ACBaseCharacter* BaseCharacter = Cast<ACBaseCharacter>(Result.GetActor());
+		if (!IsValid(BaseCharacter)||!BaseCharacter->GetAlive())
+			continue;
+		
+		ActorsHit.AddUnique(Result.GetActor());
+	}
+	
+	
+	
+	
+	if (bDrawDebug)
+	{
+		DrawHitBoxOverlapDebugs(AvatarActor,OverlapResults,HitBoxLocation,HitBoxRadius);
+	}
+	
+	return ActorsHit;
+}
+
+void UCBlueprintLibrary::DrawHitBoxOverlapDebugs(const UObject* WorldContextObject,const TArray<FOverlapResult>& OverlapResults,
+	const FVector& HitBoxLocation,const float&HitBoxRadius)
+{
+		
+	UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject,EGetWorldErrorMode::LogAndReturnNull);
+	if (!IsValid(World))return;
+	DrawDebugSphere(World, HitBoxLocation,HitBoxRadius, 16,FColor::Red,false ,3.0f);
+		
+	for (const FOverlapResult& Result : OverlapResults)
+	{
+			
+		if (IsValid(Result.GetActor()))
+		{
+			FVector DebugLocation = Result.GetActor()->GetActorLocation();
+			DebugLocation.Z+=100.0f;
+			DrawDebugSphere(World, DebugLocation,30.0f, 10,FColor::Green,false ,3.0f);
+		}
+	}
+}
+
+TArray<AActor*> UCBlueprintLibrary::ApplyKnockback(AActor* AvatarActor, const TArray<AActor*>& HitActors, float InnerRadius,float OuterRadius, float LaunchForceMagnitude, float RotationAngle, bool bDrawDebug)
+{
+	
+	if (!IsValid(AvatarActor))return TArray<AActor*>() ;
+	
+	for (AActor* HitActor : HitActors)
+	{
+	  	ACharacter*HitCharacter = Cast<ACharacter>(HitActor);
+	  	if (!IsValid(HitCharacter))continue;
+		
+		const FVector HitCharacterLocation = HitCharacter->GetActorLocation();
+		const FVector AvatarLocation = AvatarActor->GetActorLocation();
+	  	
+	  	const FVector ToHitActor  = HitCharacterLocation-AvatarLocation;
+		const float Distance = FVector::Dist(AvatarLocation,HitCharacterLocation);
+		
+		float LaunchForce = 0.0f;
+		if (Distance > OuterRadius) continue;
+		
+	  	if (Distance<= InnerRadius)
+	  	{
+	  		LaunchForce = LaunchForceMagnitude;
+	  	}
+	    else
+	    {
+		    const FVector2D FalloffRange(InnerRadius,OuterRadius);
+	    	const FVector2D LaunchForceRange(LaunchForceMagnitude,0.0f);
+	    	LaunchForce = FMath::GetMappedRangeValueClamped(FalloffRange,LaunchForceRange,Distance);
+	    }
+		
+		if (bDrawDebug)
+		{
+			GEngine->AddOnScreenDebugMessage(-1,3.0f,FColor::Red,FString::Printf(TEXT("LaunchForce:%f"),LaunchForce));
+		}
+		
+		FVector KnockbackForce = ToHitActor.GetSafeNormal();
+		KnockbackForce.Z=0.0f;
+		
+		const FVector Right = KnockbackForce.RotateAngleAxis(90.0f,FVector::UpVector);
+		KnockbackForce = KnockbackForce.RotateAngleAxis(-RotationAngle,Right) * LaunchForce;
+		
+		if (ACEnemyCharacter* EnemyCharacter = Cast<ACEnemyCharacter>(HitCharacter))
+		{
+			EnemyCharacter->StopMovingUntilLanding();
+		}
+		
+		HitCharacter->LaunchCharacter(KnockbackForce,true,true);
+	}
+	return HitActors ;
+}
 	
 

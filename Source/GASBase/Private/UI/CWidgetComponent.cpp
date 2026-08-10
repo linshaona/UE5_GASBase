@@ -75,12 +75,13 @@ void UCWidgetComponent::BindWidgetToAttributeChanges(UWidget* WidgetObject,const
 	UCAttributeWidget* AttributeWidget = Cast<UCAttributeWidget>(WidgetObject);
 	if (!IsValid(AttributeWidget)) return;
 	if (!AttributeWidget->MatchesAttribute(Pair)) return;
+	AttributeWidget->AvatarActor=GASBaseCharacter;
 		
-	AttributeWidget->OnAttributeChanged(Pair,AttributeSet.Get());//初始化
+	AttributeWidget->OnAttributeChanged(Pair,AttributeSet.Get(),0);//初始化
 		
 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(Pair.Key).AddLambda([this,AttributeWidget,&Pair](const FOnAttributeChangeData& AttributeChangeData)
 	{
-		AttributeWidget->OnAttributeChanged(Pair,AttributeSet.Get());
+		AttributeWidget->OnAttributeChanged(Pair,AttributeSet.Get(),AttributeChangeData.OldValue);
 	});
 }
 

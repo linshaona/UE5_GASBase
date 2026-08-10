@@ -22,9 +22,12 @@ public:
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="GASBase|Attributes")
 	FGameplayAttribute MaxAttribute;
 	
-	void OnAttributeChanged(const TTuple<FGameplayAttribute, FGameplayAttribute> Pair,UCAttributeSet * AttributeSet);
+	void OnAttributeChanged(const TTuple<FGameplayAttribute, FGameplayAttribute> Pair,UCAttributeSet * AttributeSet,float OldValue);
 	bool MatchesAttribute(const TTuple<FGameplayAttribute, FGameplayAttribute> Pair) const;
 	
 	UFUNCTION(BlueprintImplementableEvent,meta = (DisplayName = "On Attribute Change"))
-	void BP_OnAttributeChange(float NewValue,float NewMaxValue);//可以在蓝图中实现
+	void BP_OnAttributeChange(float NewValue,float NewMaxValue,float OldValue);//可以在蓝图中实现
+	
+	UPROPERTY(BlueprintReadOnly,Category="GASBase|Attributes")
+	TWeakObjectPtr<AActor> AvatarActor;
 };

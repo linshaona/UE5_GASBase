@@ -14,7 +14,8 @@ class GASBASE_API ACEnemyCharacter : public ACBaseCharacter
 	GENERATED_BODY()
 
 public:
-
+	
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 	ACEnemyCharacter();
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	virtual UAttributeSet* GetAttributeSet() const override;
@@ -28,12 +29,20 @@ public:
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="GASBase|AI")
 	float MaxAttackDelay{0.5f};
 	
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Replicated)
+	bool bIsBeingLaunched{false};
+	
+	UFUNCTION()
+	void StopMovingUntilLanding();
 protected:
 	
 	virtual void BeginPlay() override;
 	virtual void HandleDeath() override;
 
 private:
+	UFUNCTION()
+	void EnableMovementOnLanded(const FHitResult& Hit);
+	
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
 	

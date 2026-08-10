@@ -4,6 +4,7 @@
 namespace CTags
 {
 	      
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(None,"CTags.None","Tag for the None");
 	namespace SetByCaller
 	{
 		UE_DEFINE_GAMEPLAY_TAG_COMMENT(Projectile,"CTags.SetByCaller.Projectile","Tag for the Projectile");
